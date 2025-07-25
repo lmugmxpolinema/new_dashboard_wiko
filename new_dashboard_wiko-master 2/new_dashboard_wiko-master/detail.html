@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detail Lokasi</title>
+  <link rel="icon" type="image/x-icon" href="./img/logo_cleon.png">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body style="margin:0; background:#fff; display: flex; flex-direction: column; min-height: 100vh;">
+  <!-- Navbar -->
+  <nav style="width:100%; background:#007bff; color:#fff; padding: 1em 0; display: flex; align-items: center; justify-content: space-between; position:fixed; top:0; left:0; z-index:1000;">
+    <div style="display:flex; align-items:center;">
+      <img src="img/logo_cleon.png" alt="Cleon" style="height:60px; margin-left:52px; margin-right:16px;">
+    </div>
+    <div style="flex:1; text-align:center;">
+      <span style="font-size:1.6em; font-weight:bold;" id="navbar-title">Pasar Beringharjo</span>
+    </div>
+    <div style="display:flex; align-items:center; margin-right:24px;">
+      <button onclick="window.location.href='index.html'" style="background:#fff; color:#007bff; border:none; border-radius:5px; padding:0.5em 1.2em; font-weight:bold; font-size:1em; cursor:pointer; transition:background 0.2s;">BACK &rarr;</button>
+    </div>
+  </nav>
+
+  <!-- Konten Detail -->
+  <main style="flex:1; padding-top:10px; padding-bottom:10px; display:flex; justify-content:center;">
+    <table id="detail-table" style="
+      width: 100%;
+      max-width: 900px;
+      background: #fff;
+      border: 1.5px solid #ccc;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.1);
+      border-radius: 12px;
+      border-collapse: collapse;
+      font-size: 1.1em;
+      overflow: hidden;
+    ">
+      <!-- isi tabel dari JS -->
+
+    </table>
+  </main>
+  
+
+    
+
+  <!-- Footer -->
+  <footer style="text-align:center; background:#007bff; color:#fff; padding:0.8em 0; font-size:1em;">
+    &copy; 2025 Wifi Coin Dashboard - Cleon. All Rights Reserved.
+  </footer>
+
+<script>
+  // Ambil id dari query string
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+
+  // Ambil data detail dari JSON (untuk info lain)
+  fetch('data-lokasi.json')
+    .then(res => res.json())
+    .then(data => {
+      const lokasi = data.find(l => l.id === id);
+      if (!lokasi) {
+        document.getElementById('detail-table').innerHTML = '<tr><td colspan="2">Data lokasi tidak ditemukan.</td></tr>';
+        document.getElementById('navbar-title').textContent = 'Data Tidak Ditemukan';
+        return;
+      }
+      document.getElementById('navbar-title').textContent = lokasi["Nama Site"] || lokasi["name"] || '-';
+
+      // Ambil status real-time dari API
+      fetch('api-handler.php')
+        .then(res => res.json())
+        .then(apiData => {
+          const apiLokasi = apiData.find(l => l.id === id);
+          let statusText = '-';
+          if (apiLokasi) {
+            // Logika status sama seperti halaman utama
+            const isMati = apiLokasi.total_sales === null && apiLokasi.current_sales === null && apiLokasi.customer_served === null;
+            statusText = isMati ? 'Mati' : 'Hidup';
+          }
+
+          // Isi tabel detail, status diisi dari statusText
+          document.getElementById('detail-table').innerHTML = `
+            <tr>
+              <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #eee;">Alamat:</th>
+              <td style="padding:10px 8px; border-bottom:1px solid #eee;">
+                ${lokasi["Alamat"] || '-'} 
+                ${lokasi["Maps"] ? `<a href="${lokasi["Maps"]}" target="_blank">[Lihat di Maps]</a>` : ''}
+              </td>
+            </tr>
+            <tr>
+              <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #eee;">WhatsApp:</th>
+              <td style="padding:10px 8px; border-bottom:1px solid #eee;">
+                ${lokasi["No Telp"] ? `<a href="${lokasi["No Telp"]}" target="_blank">${lokasi["No Telp"]}</a>` : '-'}
+              </td>
+            </tr>
+            <tr>
+              <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #eee;">Jenis:</th>
+              <td style="padding:10px 8px; border-bottom:1px solid #eee;">${lokasi["WIRElESS/OPTIK"] || '-'}</td>
+            </tr>
+            <tr>
+              <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #eee;">SN ONT:</th>
+              <td style="padding:10px 8px; border-bottom:1px solid #eee;">${lokasi["SN ONT"] || '-'}</td>
+            </tr>
+            <tr>
+              <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #eee;">ID Pelanggan:</th>
+              <td style="padding:10px 8px; border-bottom:1px solid #eee;">${lokasi["ID PELANGGAN"] || '-'}</td>
+            </tr>
+            <tr>
+              <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #eee;">Status:</th>
+              <td style="padding:10px 8px; border-bottom:1px solid #eee;">${statusText}</td>
+            </tr>
+            <tr>
+              <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #eee;">Mikrotik:</th>
+              <td style="padding:10px 8px; border-bottom:1px solid #eee;">
+                ${lokasi["IP ROUTER (MIKROTIK)"] ? `<a href="${lokasi["IP ROUTER (MIKROTIK)"]}" target="_blank">${lokasi["IP ROUTER (MIKROTIK)"]}</a>` : '-'}
+              </td>
+            </tr>
+            <tr>
+              <th style="text-align:left; padding:10px 8px;">Juanfi:</th>
+              <td style="padding:10px 8px;">
+                ${lokasi["NOdeMCU"] ? `<a href="${lokasi["NOdeMCU"]}" target="_blank">${lokasi["NOdeMCU"]}</a>` : '-'}
+              </td>
+            </tr>
+          `;
+        });
+    });
+</script>
+</body>
+</html>
